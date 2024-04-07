@@ -1,0 +1,4 @@
+- source: index.qmd
+  quarto-pub:
+    - id: eda7ddf9-8093-480e-a60e-d801a1c1205b
+      url: 'https://presage.quarto.pub/shiny-app-as-a-novel-assessment-tool-for-pilots-in-training'

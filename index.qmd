@@ -1,0 +1,317 @@
+---
+title: "Shiny as a novel assessment tool for pilots in training"
+subtitle: "ShinyConf 2024"
+author: Randall Boyes and Umair Durrani
+format: 
+  revealjs:
+    slide-number: true
+    logo: assets/images/logo.png
+    theme: [dark, assets/custom.scss]
+---
+
+## Presage Group
+
+:::: columns
+
+::: column
+Canadian scientific consulting firm specializing in human behavior in the airline industry
+:::
+
+::: column
+![](assets/images/logo.png)
+:::
+
+::::
+
+::: footer
+Learn more: <https://presagegroup.com/>
+:::
+
+## Challenges in Flight Safety
+
+:::: columns
+
+::: {.column width="60%"}
+
+![](assets/images/TAPair.PNG)
+![](assets/images/youtube-video-gif.gif)
+:::
+
+::: {.column width="40%"}
+> Accidents directly caused by <span style="color:red;">pilot errors</span> account for about <span style="color:red; font-size: 150%;">70%</span> of the total accidents
+:::
+
+::::
+
+::: footer
+Sources: [Unstable approach](https://onemileatatime.com/news/tap-airbus-a321-nose-first-landing/); [Statistics](https://www.sciencedirect.com/science/article/abs/pii/S1569190X21000691)
+:::
+
+
+## Project Overview
+
+<span style="color:#00abc5">A novel assessment tool to optimize learning opportunities and performance outcomes for trainee pilots.</span>
+
+- Improve flight safety for millions of air travelers every year
+
+## Required Features
+
+- Online, fast and reliable  
+- Take data from student pilots  
+- Personal dashboard for students  
+- Separate student and instructor user interfaces 
+- Accessible on desktop, iPad and cellphone  
+
+## Development Questions  
+
+::: incremental
+- **What framework to use?** *shiny, shinyMobile, golem, rhino*
+- **How to store and retrieve data?** *Relational, NoSQL*  
+- **How to aggregate data on schedule? ** 
+- **Authentication** *shinymanager, shinyuser, firebase, polished, etc.*  
+- **Aesthetics** 
+:::
+
+## Development Questions  
+
+::: incremental
+- **What framework to use?**  <span style="color:#00abc5">shiny with {golem}</span>  
+- **How to store and retrieve data?** <span style="color:#00abc5">Firestore with in-house {frstore} made with {httr2}</span>  
+- **How to aggregate data on schedule?** <span style="color:#00abc5">GitHub Actions</span>  
+- **Authentication** <span style="color:#00abc5">Firebase with {frbs}</span>    
+- **Aesthetics** <span style="color:#00abc5">{bslib} - responsive design</span>  
+:::
+
+# Quick Demo  
+
+# Let's build an example app  
+
+## Firebase Project 
+
+{{< video assets/videos/create_firebase_project.mp4 >}}  
+
+
+## Firebase Project 
+
+![](assets/images/renviron_vars_from_firebase.png)
+
+## Firebase Project
+
+:::: columns
+
+::: {.column width="30%"}
+![](assets/images/renviron_vars_from_firebase.png)
+:::
+
+::: {.column width="70%"}
+In your `.Renviron` file:  
+```{r}
+#| eval: false
+#| echo: true
+FIREBASE_PROJECT_ID="<Firebase projectId>"
+```
+:::
+
+::::
+
+
+## {background-image="assets/images/authentication.png"}
+
+## {background-image="assets/images/sign_in_method.PNG"}
+
+
+## Authentication
+
+[{firebase}](https://firebase.john-coene.com/) is great but with limited UI customization  
+
+<img src="assets/images/firebase.PNG" width="70%" height="auto">
+
+
+## Authentication
+
+**Requirement:** Register and sign in with ID instead of email  
+
+- Not possible with {firebase}  
+
+
+## Authentication
+
+Meet a new package [{frbs}](https://github.com/kennedymwavu/frbs) by Kennedy Mwavu  
+  
+
+<br> Useful functions:  
+
+- `frbs_sign_up(email, password)`  
+- `frbs_sign_in(email, password)` 
+
+## Authentication
+
+Customize UI as you like. For example, [{frbs-examples}](https://github.com/kennedymwavu/frbs-examples) also by Kennedy Mwavu:  
+
+![](assets/images/frbs_example.PNG)
+
+
+## Authentication
+
+With `bslib::bs_theme`:
+
+![](assets/images/auth_jedi.PNG)
+
+
+## Authentication
+
+::: incremental
+- Check if the ID matches with student/instructor email  
+- Launch the corresponding UI 
+:::
+
+## Authentication
+
+:::: columns
+
+::: column
+**Student UI**  
+
+![](assets/images/app_user.PNG)
+:::
+
+::: column
+**Instructor UI**
+
+![](assets/images/app_instructor.PNG)
+:::
+
+::::
+
+
+## Database Operations
+
+[Cloud Firestore](https://firebase.google.com/docs/firestore) is a scalable NoSQL database  
+
+- No official client library for R 😔 
+
+
+## Database Operations
+
+We developed our own  
+
+:::: columns
+
+::: column
+- Create, read, update, and delete operations via REST API  
+- {httr2}   
+
+::: {.fragment .fade-in}
+- `frstore_create_document`   
+- `frstore_patch`  
+- `frstore_get`  
+:::
+
+:::
+
+::: column
+![](assets/images/frstore.png)
+:::
+
+::::
+
+
+## Database Read example
+
+![](assets/images/db_read.PNG)
+
+## Database Write example
+
+![](assets/images/db_write.gif)
+
+::: footer
+[Based on this Gist](https://gist.github.com/thisisnic/11d6b02007921b1ae872167049a83974)
+:::
+
+## Database Read example
+
+![](assets/images/db_read2.gif)
+
+
+## Aggregating data on schedule
+
+**Requirement:** Compare a pilot with *<span style="color:#00abc5">average pilot</span>*    
+
+**Example**: Average skill by homeworld and starships:
+
+![](assets/images/avg.gif)
+
+
+## Aggregating data on schedule
+
+GitHub actions  
+```{r}
+#| eval: false
+#| echo: true
+#| code-line-numbers: 3,4|12|27|40
+on:
+  workflow_dispatch:
+  schedule:
+   - cron:  "00 00 * * *"
+
+name: calculate average
+
+jobs:
+  run-r-script:
+    runs-on: ubuntu-latest
+    env:
+      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+      PASSWORD: ${{ secrets.PASSWORD }}
+      GH_PAT: ${{ secrets.GH_PAT }} # Add the GitHub PAT secret
+    steps:
+      - uses: actions/checkout@v3
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          cache-version: 2
+          packages:
+            any::remotes
+
+
+      - name: Install R packages
+        run: |
+          Rscript -e 'remotes::install_version("dplyr", version = "1.1.4")'
+          Rscript -e 'remotes::install_version("jsonlite", version = "1.8.7")'
+          Rscript -e 'remotes::install_version("httr2", version = "1.0.0")'
+          Rscript -e 'remotes::install_version("tidyr", version = "1.3.1")'
+          Rscript -e 'remotes::install_version("stringr", version = "1.5.1")'
+          Rscript -e 'remotes::install_version("lubridate", version = "1.9.3")'
+          Rscript -e 'remotes::install_version("purrr", version = "1.0.2")'
+          Rscript -e 'remotes::install_version("tibble", version = "3.2.1")'
+          Rscript -e 'remotes::install_github("kennedymwavu/frbs", auth_token = Sys.getenv("GH_PAT"))'
+
+      - name: run-script
+        run: Rscript process_data_to_create_averages.R
+```
+
+
+## Aesthetics
+
+{bslib} makes UI customization easy  
+
+![](assets/images/aesthetics.PNG) 
+
+
+## In Conclusion:
+
+✅ Online, fast and reliable    
+✅ Take data from student pilots    
+✅ Personal dashboard for students    
+✅ Separate student and instructor user interfaces   
+✅ Accessible on desktop, iPad and cellphone   
+
+
+## Resources
+
+* [Slides](https://presage.quarto.pub/shiny-app-as-a-novel-assessment-tool-for-pilots-in-training/#/title-slide)
+* [Shiny app](https://presage.shinyapps.io/pilot_app/)
+* [App source](https://github.com/udurraniAtPresage/pilot_app)
+

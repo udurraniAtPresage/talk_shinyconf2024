@@ -27,6 +27,37 @@ Canadian scientific consulting firm specializing in human behavior in the airlin
 Learn more: <https://presagegroup.com/>
 :::
 
+
+## Analytics Team
+
+:::: columns
+
+::: column
+![](assets/images/randy.jpg){width="50%" height="50%"}  
+
+<small>Randall Boyes (Director of Analytics)</small>
+
+
+![](assets/images/amy.jpeg){width="35%" height="35%"}  
+<small>Amy Ecclestone (Junior Data Analyst)</small>  
+
+
+:::
+
+::: column
+![](assets/images/brooke.jpg){width="40%" height="40%"}  
+<small>Brooke Linden (Director of Research)</small>  
+
+
+![](assets/images/umair.jpg){width="60%" height="60%"}  
+
+<small>Umair Durrani (Junior Data Scientist)</small>    
+
+:::
+
+::::
+
+
 ## Challenges in Flight Safety
 
 :::: columns
